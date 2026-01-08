@@ -1,0 +1,28 @@
+version: "3"
+
+services:
+  web-blind-sqli:
+    build: .
+    ports:
+      - "4000:80"
+    volumes:
+      - ./src:/var/www/html
+    depends_on:
+      - db-blind-sqli
+    networks:
+      - blind_network
+
+  db-blind-sqli:
+    image: mysql:5.7
+    environment:
+      MYSQL_DATABASE: blind_sqli_db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: 123456
+      MYSQL_ROOT_PASSWORD: admin
+    volumes:
+      - ./db:/docker-entrypoint-initdb.d
+    networks:
+      - blind_network
+
+networks:
+  blind_network:

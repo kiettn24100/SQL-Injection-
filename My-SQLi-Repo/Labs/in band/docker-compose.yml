@@ -1,0 +1,38 @@
+version: "3"
+
+# tạo service web + apache để chạy code php
+# services thực ra nó cũng giống như một cái khuôn được phát triển từ khuôn basic (image)
+# services là khuôn mẫu , container là vật được tạo ra từ services
+services:
+  # services 1: dùng để xử lý câu lệnh php
+  web-sqli:
+    build: . # dấu "." đó tức là cái service này được dựng lên từ cái form dockerfile kia , và cái dockerfile phải cùng nằm trong folder với docker-compose.yml
+    ports:
+      - "4000:80" # khi mà dùng cái build . đó tức là cái cổng mở docker phải theo với form cổng được set-up sẵn trong image php:5.6-apache , mà mặc định của nó luôn là 80
+    volumes:
+      # copy paste code từ mục src vào container
+      - ./src:/var/www/html
+    depends_on:
+      - db-sqli # đợi database chạy xong mới chạy web
+    networks:
+      - sql_network # tạo mạng riêng để web và database liên lạc với nhau
+    # notes ở đây , ko cần dòng networks cũng được vì docker compose có thể tự tạo cho mạng mặc định
+
+  # Service 2: Database MySQL
+  db-sqli:
+    image: mysql:5.7 # cái image này tương tự như cái build ở trên , nó sẽ lấy khuôn mysqli:5.7 ở trên dockerhub để build
+    environment:
+      MYSQL_DATABASE: sqli_db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: 123456
+      MYSQL_ROOT_PASSWORD: admin
+    volumes:
+      # QUAN TRỌNG: Map thư mục db vào để MySQL tự chạy file init.sql khi khởi động
+      - ./db:/docker-entrypoint-initdb.d
+    # khai báo mạng , giống với 2 cái networks trên
+    networks:
+      - sql_network # đoạn này phải đặt giống với networks trên để có thể thông được với nhau
+
+# khai báo mạng , giống với 2 cái networks trên
+networks:
+  sql_network:

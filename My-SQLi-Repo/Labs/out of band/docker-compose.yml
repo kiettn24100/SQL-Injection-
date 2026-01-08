@@ -1,0 +1,34 @@
+version: "3"
+
+services:
+  web-oob-sqli:
+    build: .
+    ports:
+      - 4000:80
+    volumes:
+      - ./src:/var/www/html
+    depends_on:
+      - db-oob-sqli
+    networks:
+      - oob-sqli-network
+
+  db-oob-sqli:
+    image: mysql:5.7
+    environment:
+      MYSQL_DATABASE: oob_sqli_db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: 123456
+      MYSQL_ROOT_PASSWORD: admin
+
+    command: mysqld --secure-file-priv=
+    # cái command này bắt buộc phải có để cung cấp quyền thêm 1 plugin vào trong hệ thống
+    volumes:
+      - ./db:/docker-entrypoint-initdb.d
+      # đoạn này vì phải thêm plugin vào cho mysql chứ mysql nó ko thể tự gửi truy vấn DNS ra ngoài mạng được
+      # tương tự vẫn phải ánh xạ cái file plugin này vào trong đường dẫn hệ thống của container
+      - ./config/lib_mysqludf_sys.so:/usr/lib64/mysql/plugin/lib_mysqludf_sys_64.so
+    networks:
+      - oob-sqli-network
+
+networks:
+  oob-sqli-network:

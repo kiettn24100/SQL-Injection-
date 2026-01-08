@@ -1,0 +1,26 @@
+# để tạo dockerfile , ngôn ngữ được sử dụng là ngôn ngữ của docker với các lệnh là FROM , RUN , COPY , DIRWORK,.. 
+# và ngôn ngữ của bash như là apt-get update && apt-get instal -y ,...
+
+# chọn ngôn ngữ php 5.6 làm ngôn ngữ backend + phần mềm máy chủ web là apache
+FROM php:5.6-apache
+
+# cập nhật và cài đặt phần mềm hệ thống cần thiết
+# RUN apt-get update && apt-get install -y \ vim (test thì thấy image đời cũ rồi nên không còn hỗ trợ vim nên ở đây mình comment) 
+
+
+# cài đặt thư viện php để kết nối với db
+# không được dùng cái apt-get như trên để cài extension php mà phải dùng docker-php-ext-install
+RUN docker-php-ext-install mysql mysqli pdo_mysql
+# thư viện mysqli: thư viện chuẩn để kết nối mysql
+# thư viện mysql: bỏ vô cho cần thiết nếu là PHP 5.6 về trước
+# thư viện pdo_mysql: thư viện kết nối theo kiểu hướng đối tượng PDO (chưa hiểu đoạn này)
+# ở đây có thể để chắc mysqli cho dễ cũng được
+
+COPY src/ /var/www/html
+# những file như ở cạnh dockerfile sẽ được copy paste vào trong đường dẫn /var/www/html/ 
+# tại sao phải làm như vậy? bởi vì cấu hình mặc định apache trên Linux quy định: chỉ hiển thị web từ các file bên trong thư mục này 
+# cho nên dockerfile này phải là file nằm ngoài cùng để có thể lấy được hết login.php , index.php ,...
+
+WORKDIR /var/www/html
+# thiết lập thư mục làm việc (cứ hiểu nôm na là nó giống như khi mở cmd trên mt dòng đầu tiên hiện ra là: C:\Users\Admin>)
+
